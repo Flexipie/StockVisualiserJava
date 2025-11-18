@@ -41,22 +41,22 @@
                         
                         <!-- Portfolio Summary Cards -->
                         <HBox spacing="20" alignment="CENTER">
-                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Portfolio Value" style="-fx-font-size: 14px; -fx-fill: #666;"/>
                                 <Label fx:id="portfolioValueLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976d2;"/>
                             </VBox>
                             
-                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Total Investment" style="-fx-font-size: 14px; -fx-fill: #666;"/>
                                 <Label fx:id="investmentLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #666;"/>
                             </VBox>
                             
-                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Profit/Loss" style="-fx-font-size: 14px; -fx-fill: #666;"/>
                                 <Label fx:id="profitLossLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
                             </VBox>
                             
-                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="stat-card" spacing="5">
                                 <Text text="P/L Percentage" style="-fx-font-size: 14px; -fx-fill: #666;"/>
                                 <Label fx:id="profitLossPercentLabel" text="0.00%" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
                             </VBox>
@@ -64,12 +64,12 @@
                         
                         <!-- Charts Section -->
                         <HBox spacing="20">
-                            <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="card" spacing="10" prefWidth="400" minWidth="400" maxWidth="Infinity">
                                 <Text text="Portfolio Allocation" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                                 <PieChart fx:id="portfolioAllocationChart" minHeight="300" legendVisible="true"/>
                             </VBox>
                             
-                            <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="card" spacing="10" prefWidth="400" minWidth="400" maxWidth="Infinity">
                                 <Text text="Stock Performance Comparison" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                                 <BarChart fx:id="stockComparisonChart" minHeight="300" legendVisible="true">
                                     <xAxis><CategoryAxis label="Stock Symbol"/></xAxis>
@@ -100,7 +100,7 @@
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Text text="My Holdings" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
+                        <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
                         <Button text="Sell Selected" onAction="#handleSellStock" styleClass="button-danger"/>
                         <Button text="Refresh" onAction="#handleRefresh" styleClass="button-primary"/>
                     </HBox>
@@ -126,7 +126,7 @@
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Text text="Available Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
+                        <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
                         <Label text="Search:"/>
                         <TextField fx:id="stockSearchField" promptText="Search by symbol, company, or sector..." prefWidth="300"/>
                     </HBox>
@@ -146,7 +146,7 @@
                             <Label text="Quantity:"/>
                             <TextField fx:id="buyQuantityField" promptText="Enter quantity" prefWidth="150"/>
                             <Button text="Buy Stock" onAction="#handleBuyStock" styleClass="button-success"/>
-                            <Region HBox.hgrow="ALWAYS"/>
+                            <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
                             <Button text="Add to Watchlist" onAction="#handleAddToWatchlist" styleClass="button-primary"/>
                         </HBox>
                     </VBox>
@@ -158,7 +158,7 @@
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Text text="Transaction History" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
+                        <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
                         <Label text="Search:"/>
                         <TextField fx:id="transactionSearchField" promptText="Search transactions..." prefWidth="300"/>
                     </HBox>
@@ -185,7 +185,7 @@
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Text text="My Watchlist" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
+                        <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
                         <Button text="Remove Selected" onAction="#handleRemoveFromWatchlist" styleClass="button-danger"/>
                     </HBox>
                     

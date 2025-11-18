@@ -122,49 +122,77 @@ public class StockDataService {
     
     /**
      * Simple JSON parsing for Alpha Vantage response
+     * Format: {"Time Series (Daily)": {"2025-11-17": {"4. close": "123.45"}}}
      */
     private ObservableList<PriceData> parseAPIResponse(String json) {
         ObservableList<PriceData> data = FXCollections.observableArrayList();
         
         try {
+            System.out.println("🔍 Starting JSON parsing...");
+            
             // Look for "Time Series (Daily)" section
             int timeSeriesIndex = json.indexOf("\"Time Series (Daily)\"");
             if (timeSeriesIndex == -1) {
-                return null; // API limit reached or invalid response
+                System.err.println("❌ Could not find 'Time Series (Daily)' in response");
+                return null;
             }
             
+            System.out.println("✓ Found Time Series data at index " + timeSeriesIndex);
+            
+            // Extract the time series object
             String timeSeriesData = json.substring(timeSeriesIndex);
             
-            // Extract dates and closing prices (last 30 days)
-            String[] lines = timeSeriesData.split(",");
-            int count = 0;
+            // Split by date entries (look for "YYYY-MM-DD" pattern)
+            String[] parts = timeSeriesData.split("\"\\d{4}-\\d{2}-\\d{2}\"");
             
-            for (String line : lines) {
-                if (count >= 30) break;
-                
-                // Look for date pattern "YYYY-MM-DD"
-                if (line.contains("\"") && line.matches(".*\\d{4}-\\d{2}-\\d{2}.*")) {
-                    String dateStr = line.replaceAll("[^0-9-]", "").trim();
-                    if (dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                        // Find the closing price for this date
-                        int closingIndex = timeSeriesData.indexOf("\"4. close\"", timeSeriesIndex);
-                        if (closingIndex != -1) {
-                            String priceStr = timeSeriesData.substring(closingIndex + 11, closingIndex + 30);
-                            priceStr = priceStr.split("\"")[1];
-                            
-                            double price = Double.parseDouble(priceStr);
-                            LocalDate date = LocalDate.parse(dateStr);
-                            data.add(new PriceData(date, price));
-                            count++;
+            System.out.println("📊 Found " + (parts.length - 1) + " date entries");
+            
+            // Extract all dates first
+            java.util.regex.Pattern datePattern = java.util.regex.Pattern.compile("\"(\\d{4}-\\d{2}-\\d{2})\"");
+            java.util.regex.Matcher dateMatcher = datePattern.matcher(timeSeriesData);
+            
+            java.util.List<String> dates = new java.util.ArrayList<>();
+            while (dateMatcher.find() && dates.size() < 30) {
+                dates.add(dateMatcher.group(1));
+            }
+            
+            System.out.println("📅 Extracted " + dates.size() + " dates");
+            
+            // For each date, find its closing price
+            for (String dateStr : dates) {
+                try {
+                    // Find the data block for this date
+                    int dateIndex = json.indexOf("\"" + dateStr + "\"");
+                    if (dateIndex == -1) continue;
+                    
+                    // Look for "4. close" within the next 500 characters
+                    String dataBlock = json.substring(dateIndex, Math.min(dateIndex + 500, json.length()));
+                    
+                    // Extract closing price using regex
+                    java.util.regex.Pattern pricePattern = java.util.regex.Pattern.compile("\"4\\. close\":\\s*\"([0-9.]+)\"");
+                    java.util.regex.Matcher priceMatcher = pricePattern.matcher(dataBlock);
+                    
+                    if (priceMatcher.find()) {
+                        String priceStr = priceMatcher.group(1);
+                        double price = Double.parseDouble(priceStr);
+                        LocalDate date = LocalDate.parse(dateStr);
+                        data.add(new PriceData(date, price));
+                        
+                        if (data.size() <= 3) {
+                            System.out.println("  ✓ " + dateStr + " → $" + String.format("%.2f", price));
                         }
                     }
+                } catch (Exception e) {
+                    System.err.println("  ⚠ Failed to parse date " + dateStr + ": " + e.getMessage());
                 }
             }
             
+            System.out.println("✅ Successfully parsed " + data.size() + " price points");
             return data.isEmpty() ? null : data;
             
         } catch (Exception e) {
-            System.err.println("JSON parsing failed: " + e.getMessage());
+            System.err.println("❌ JSON parsing exception: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

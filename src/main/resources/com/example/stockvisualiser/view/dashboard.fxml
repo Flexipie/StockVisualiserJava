@@ -171,7 +171,7 @@
                             <TableColumn fx:id="transQuantityCol" text="Quantity" prefWidth="80"/>
                             <TableColumn fx:id="transPriceCol" text="Price/Share" prefWidth="100"/>
                             <TableColumn fx:id="transTotalCol" text="Total Amount" prefWidth="120"/>
-                            <TableColumn fx:id="transDateCol" text="Date & Time" prefWidth="180"/>
+                            <TableColumn fx:id="transDateCol" text="Date and Time" prefWidth="180"/>
                         </columns>
                         <placeholder>
                             <Label text="No transactions yet. Start trading to see your transaction history!"/>

@@ -27,6 +27,7 @@ public class DashboardController {
     private final TransactionService transactionService;
     private final WatchlistService watchlistService;
     private final AuthenticationService authService;
+    private final StockDataService stockDataService;
     
     // Current user
     private User currentUser;
@@ -65,6 +66,8 @@ public class DashboardController {
     @FXML private TableColumn<Stock, Double> stockPriceCol;
     @FXML private TextField buyQuantityField;
     @FXML private Label selectedStockLabel;
+    @FXML private LineChart<String, Number> stockPriceChart;
+    @FXML private javafx.scene.text.Text chartTitleText;
 
     // FXML Components - Transactions Tab (with search)
     @FXML private TextField transactionSearchField;
@@ -100,6 +103,7 @@ public class DashboardController {
         this.transactionService = new TransactionService();
         this.watchlistService = new WatchlistService();
         this.authService = new AuthenticationService();
+        this.stockDataService = new StockDataService();
     }
 
     @FXML
@@ -225,11 +229,13 @@ public class DashboardController {
                 });
             }
             
-            // Row selection
+            // Row selection - update selected label AND chart
             stocksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
                 if (newSelection != null) {
                     selectedStockLabel.setText("Selected: " + newSelection.getSymbol() + " - " + newSelection.getCompanyName() + 
                                              " | Price: $" + String.format("%.2f", newSelection.getCurrentPrice()));
+                    // Update price chart with historical data
+                    updateStockPriceChart(newSelection.getSymbol());
                 }
             });
         }
@@ -659,6 +665,63 @@ public class DashboardController {
             StockVisualiserApp.showLoginScreen();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update the stock price chart with historical data
+     */
+    private void updateStockPriceChart(String symbol) {
+        if (stockPriceChart == null || chartTitleText == null) {
+            return;
+        }
+        
+        try {
+            // Update chart title
+            chartTitleText.setText(symbol + " - 30 Day Price History");
+            
+            // Fetch historical price data
+            ObservableList<StockDataService.PriceData> historicalData = stockDataService.getHistoricalPrices(symbol);
+            
+            if (historicalData.isEmpty()) {
+                chartTitleText.setText("No data available for " + symbol);
+                stockPriceChart.getData().clear();
+                return;
+            }
+            
+            // Create series for the chart
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName(symbol + " Price");
+            
+            // Add data points
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd");
+            for (StockDataService.PriceData priceData : historicalData) {
+                String dateStr = priceData.getDate().format(dateFormatter);
+                series.getData().add(new XYChart.Data<>(dateStr, priceData.getPrice()));
+            }
+            
+            // Update chart
+            stockPriceChart.getData().clear();
+            stockPriceChart.getData().add(series);
+            
+        } catch (Exception e) {
+            System.err.println("Error updating price chart: " + e.getMessage());
+            chartTitleText.setText("Error loading data for " + symbol);
+        }
+    }
+
+    /**
+     * Refresh the currently displayed stock chart
+     */
+    @FXML
+    private void handleRefreshChart() {
+        Stock selectedStock = stocksTable.getSelectionModel().getSelectedItem();
+        if (selectedStock != null) {
+            updateStockPriceChart(selectedStock.getSymbol());
+            showAlert(Alert.AlertType.INFORMATION, "Chart Refreshed", 
+                     "Price chart updated for " + selectedStock.getSymbol());
+        } else {
+            showError("Please select a stock first");
         }
     }
 

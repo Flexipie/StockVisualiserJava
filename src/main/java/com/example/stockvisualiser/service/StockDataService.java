@@ -20,7 +20,7 @@ public class StockDataService {
     
     // Alpha Vantage API key (free tier: 25 requests/day)
     // Get your own key at: https://www.alphavantage.co/support/#api-key
-    private static final String API_KEY = "demo"; // Use "demo" for testing with limited stocks
+    private static final String API_KEY = "2UPAIY6PD8V75FJF"; // Use "demo" for testing with limited stocks
     private static final String BASE_URL = "https://www.alphavantage.co/query";
     
     /**

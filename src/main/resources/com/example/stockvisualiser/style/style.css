@@ -112,16 +112,76 @@
 
 /* Chart styling */
 .chart {
-    -fx-padding: 10px;
+    -fx-padding: 15px;
     -fx-background-color: white;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
+    -fx-border-color: transparent;
 }
 
 .chart-title {
     -fx-font-size: 16px;
     -fx-font-weight: bold;
+    -fx-text-fill: #424242;
+}
+
+.chart-content {
+    -fx-padding: 10px;
+}
+
+/* Chart plot area */
+.chart-plot-background {
+    -fx-background-color: #fafafa;
+}
+
+/* Chart gridlines */
+.chart-vertical-grid-lines {
+    -fx-stroke: #e0e0e0;
+    -fx-stroke-width: 1;
+    -fx-stroke-dash-array: 5 5;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #e0e0e0;
+    -fx-stroke-width: 1;
+    -fx-stroke-dash-array: 5 5;
+}
+
+/* Chart axes */
+.axis {
+    -fx-tick-label-fill: #666666;
+    -fx-font-size: 11px;
+}
+
+.axis-label {
+    -fx-text-fill: #424242;
+    -fx-font-weight: bold;
+}
+
+/* Line chart specific */
+.chart-series-line {
+    -fx-stroke-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(25, 118, 210, 0.3), 4, 0.5, 0, 1);
+}
+
+.chart-line-symbol {
+    -fx-background-color: #1976d2;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 4, 0, 0, 1);
+}
+
+.chart-line-symbol:hover {
+    -fx-background-color: #1565c0;
+    -fx-padding: 8px;
+}
+
+/* Chart legend */
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+}
+
+.chart-legend-item-symbol {
+    -fx-background-radius: 3px;
 }
 
 /* Tab pane */

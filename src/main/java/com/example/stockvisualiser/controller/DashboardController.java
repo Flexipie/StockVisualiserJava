@@ -691,21 +691,47 @@ public class DashboardController {
             
             // Create series for the chart
             XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName(symbol + " Price");
+            series.setName(symbol + " Stock Price");
             
-            // Add data points
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd");
-            for (StockDataService.PriceData priceData : historicalData) {
+            // Add data points - sample every 2nd point to make X-axis readable
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
+            for (int i = 0; i < historicalData.size(); i += 2) {
+                StockDataService.PriceData priceData = historicalData.get(i);
                 String dateStr = priceData.getDate().format(dateFormatter);
                 series.getData().add(new XYChart.Data<>(dateStr, priceData.getPrice()));
+            }
+            
+            // Add the last point if we didn't include it
+            if (historicalData.size() % 2 != 0) {
+                StockDataService.PriceData lastPoint = historicalData.get(historicalData.size() - 1);
+                String dateStr = lastPoint.getDate().format(dateFormatter);
+                series.getData().add(new XYChart.Data<>(dateStr, lastPoint.getPrice()));
             }
             
             // Update chart
             stockPriceChart.getData().clear();
             stockPriceChart.getData().add(series);
             
+            // Style the series line
+            series.getNode().setStyle("-fx-stroke: #1976d2; -fx-stroke-width: 3px;");
+            
+            // Add tooltips to data points
+            for (XYChart.Data<String, Number> data : series.getData()) {
+                Tooltip tooltip = new Tooltip(
+                    "Date: " + data.getXValue() + "\n" +
+                    "Price: $" + String.format("%.2f", data.getYValue())
+                );
+                Tooltip.install(data.getNode(), tooltip);
+                
+                // Style data points
+                if (data.getNode() != null) {
+                    data.getNode().setStyle("-fx-background-color: #1976d2; -fx-background-radius: 5px;");
+                }
+            }
+            
         } catch (Exception e) {
             System.err.println("Error updating price chart: " + e.getMessage());
+            e.printStackTrace();
             chartTitleText.setText("Error loading data for " + symbol);
         }
     }

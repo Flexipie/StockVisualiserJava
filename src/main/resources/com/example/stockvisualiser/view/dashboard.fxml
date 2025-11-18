@@ -123,51 +123,60 @@
             
             <!-- Stocks Tab -->
             <Tab text="📈 Stocks">
-                <VBox spacing="15" style="-fx-padding: 20;">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Text text="Available Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
-                        <Label text="Search:"/>
-                        <TextField fx:id="stockSearchField" promptText="Search by symbol, company, or sector..." prefWidth="300"/>
-                    </HBox>
-                    
-                    <TableView fx:id="stocksTable" prefHeight="250">
-                        <columns>
-                            <TableColumn fx:id="stockSymbolCol" text="Symbol" prefWidth="100"/>
-                            <TableColumn fx:id="stockCompanyCol" text="Company Name" prefWidth="300"/>
-                            <TableColumn fx:id="stockSectorCol" text="Sector" prefWidth="150"/>
-                            <TableColumn fx:id="stockPriceCol" text="Current Price" prefWidth="120"/>
-                        </columns>
-                    </TableView>
-                    
-                    <!-- Stock Price Chart -->
-                    <VBox spacing="10" styleClass="card">
-                        <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Text fx:id="chartTitleText" text="Select a stock to view price history" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                            <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
-                            <Button text="Refresh Chart" onAction="#handleRefreshChart" styleClass="button-primary"/>
-                        </HBox>
-                        <LineChart fx:id="stockPriceChart" minHeight="300" legendVisible="false" animated="true">
-                            <xAxis>
-                                <CategoryAxis label="Date" side="BOTTOM"/>
-                            </xAxis>
-                            <yAxis>
-                                <NumberAxis label="Price (USD)" side="LEFT" autoRanging="true"/>
-                            </yAxis>
-                        </LineChart>
+                <ScrollPane fitToWidth="true">
+                    <VBox spacing="15" style="-fx-padding: 20;">
+                        <!-- Search and Table Section -->
+                        <VBox spacing="10" styleClass="card">
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Text text="Available Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
+                                <Label text="Search:"/>
+                                <TextField fx:id="stockSearchField" promptText="Search by symbol, company, or sector..." prefWidth="300"/>
+                            </HBox>
+                            
+                            <TableView fx:id="stocksTable" prefHeight="200">
+                                <columns>
+                                    <TableColumn fx:id="stockSymbolCol" text="Symbol" prefWidth="100"/>
+                                    <TableColumn fx:id="stockCompanyCol" text="Company Name" prefWidth="300"/>
+                                    <TableColumn fx:id="stockSectorCol" text="Sector" prefWidth="150"/>
+                                    <TableColumn fx:id="stockPriceCol" text="Current Price" prefWidth="120"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                        
+                        <!-- Stock Price Chart -->
+                        <VBox spacing="10" styleClass="card" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10;">
+                                <Text fx:id="chartTitleText" text="Select a stock to view 30-day price history" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1976d2;"/>
+                                <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
+                                <Button text="🔄 Refresh Chart" onAction="#handleRefreshChart" styleClass="button-primary"/>
+                            </HBox>
+                            <LineChart fx:id="stockPriceChart" minHeight="350" prefHeight="350" legendVisible="true" animated="true" 
+                                      style="-fx-background-color: transparent;">
+                                <xAxis>
+                                    <CategoryAxis label="Date" side="BOTTOM" animated="true" 
+                                                 style="-fx-font-size: 11px;" tickLabelRotation="45"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Price (USD)" side="LEFT" autoRanging="true" 
+                                               style="-fx-font-size: 11px;" tickLabelFill="#666666"/>
+                                </yAxis>
+                            </LineChart>
+                        </VBox>
+                        
+                        <!-- Trading Actions -->
+                        <VBox spacing="10" styleClass="card">
+                            <Label fx:id="selectedStockLabel" text="Select a stock to buy" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Label text="Quantity:"/>
+                                <TextField fx:id="buyQuantityField" promptText="Enter quantity" prefWidth="150"/>
+                                <Button text="Buy Stock" onAction="#handleBuyStock" styleClass="button-success"/>
+                                <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
+                                <Button text="Add to Watchlist" onAction="#handleAddToWatchlist" styleClass="button-primary"/>
+                            </HBox>
+                        </VBox>
                     </VBox>
-                    
-                    <VBox spacing="10" styleClass="card">
-                        <Label fx:id="selectedStockLabel" text="Select a stock to buy" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="Quantity:"/>
-                            <TextField fx:id="buyQuantityField" promptText="Enter quantity" prefWidth="150"/>
-                            <Button text="Buy Stock" onAction="#handleBuyStock" styleClass="button-success"/>
-                            <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
-                            <Button text="Add to Watchlist" onAction="#handleAddToWatchlist" styleClass="button-primary"/>
-                        </HBox>
-                    </VBox>
-                </VBox>
+                </ScrollPane>
             </Tab>
             
             <!-- Transactions Tab -->

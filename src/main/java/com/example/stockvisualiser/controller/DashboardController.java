@@ -4,7 +4,6 @@ import com.example.stockvisualiser.StockVisualiserApp;
 import com.example.stockvisualiser.model.*;
 import com.example.stockvisualiser.service.*;
 import com.example.stockvisualiser.util.SceneManager;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,10 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -395,8 +391,6 @@ public class DashboardController {
         ObservableList<Portfolio> portfolio = portfolioService.getUserPortfolio(currentUser.getUserId());
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
         
-        Map<String, Double> sectorValues = new HashMap<>();
-        
         // Group by stock symbol
         for (Portfolio holding : portfolio) {
             pieChartData.add(new PieChart.Data(
@@ -409,6 +403,7 @@ public class DashboardController {
         portfolioAllocationChart.setTitle("Portfolio Allocation by Stock");
     }
 
+    @SuppressWarnings("unchecked")
     private void loadStockComparisonChart() {
         ObservableList<Portfolio> portfolio = portfolioService.getUserPortfolio(currentUser.getUserId());
         

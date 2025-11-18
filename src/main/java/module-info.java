@@ -2,7 +2,9 @@ module com.example.stockvisualiser {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
-    requires java.sql;
+    requires transitive javafx.graphics;
+    requires transitive javafx.base;
+    requires transitive java.sql;
     requires jbcrypt;
 
     requires org.controlsfx.controls;

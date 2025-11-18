@@ -2,7 +2,6 @@ package com.example.stockvisualiser.service;
 
 import com.example.stockvisualiser.database.DatabaseManager;
 import com.example.stockvisualiser.model.Portfolio;
-import com.example.stockvisualiser.model.Stock;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -14,11 +13,9 @@ import java.time.LocalDate;
  */
 public class PortfolioService {
     private final DatabaseManager dbManager;
-    private final StockService stockService;
 
     public PortfolioService() {
         this.dbManager = DatabaseManager.getInstance();
-        this.stockService = new StockService();
     }
 
     /**

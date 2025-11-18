@@ -43,22 +43,22 @@
                         <HBox spacing="20" alignment="CENTER">
                             <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Portfolio Value" style="-fx-font-size: 14px; -fx-fill: #666;"/>
-                                <Label fx:id="portfolioValueLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976d2;"/>
+                                <Label fx:id="portfolioValueLabel" text="0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976d2;"/>
                             </VBox>
                             
                             <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Total Investment" style="-fx-font-size: 14px; -fx-fill: #666;"/>
-                                <Label fx:id="investmentLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #666;"/>
+                                <Label fx:id="investmentLabel" text="0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #666;"/>
                             </VBox>
                             
                             <VBox styleClass="stat-card" spacing="5">
                                 <Text text="Profit/Loss" style="-fx-font-size: 14px; -fx-fill: #666;"/>
-                                <Label fx:id="profitLossLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                                <Label fx:id="profitLossLabel" text="0.00" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
                             </VBox>
                             
                             <VBox styleClass="stat-card" spacing="5">
                                 <Text text="P/L Percentage" style="-fx-font-size: 14px; -fx-fill: #666;"/>
-                                <Label fx:id="profitLossPercentLabel" text="0.00%" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                                <Label fx:id="profitLossPercentLabel" text="0.00" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
                             </VBox>
                         </HBox>
                         

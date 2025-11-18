@@ -22,4 +22,5 @@ module com.example.stockvisualiser {
     exports com.example.stockvisualiser.model;
     exports com.example.stockvisualiser.database;
     exports com.example.stockvisualiser.service;
+    exports com.example.stockvisualiser.util;
 }

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.stockvisualiser.controller.DashboardController"
+            stylesheets="@../style/style.css">
+
+    <top>
+        <VBox>
+            <MenuBar style="-fx-background-color: #1976d2;">
+                <Menu text="File">
+                    <MenuItem text="Refresh" onAction="#handleRefresh"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Logout" onAction="#handleLogout"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem text="About" />
+                </Menu>
+            </MenuBar>
+            
+            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #1976d2; -fx-padding: 15;">
+                <Label fx:id="welcomeLabel" text="Welcome" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" side="TOP">
+            
+            <!-- Dashboard / Analytics Tab -->
+            <Tab text="📊 Dashboard">
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #f5f5f5;">
+                    <VBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f5f5f5;">
+                        
+                        <!-- Portfolio Summary Cards -->
+                        <HBox spacing="20" alignment="CENTER">
+                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                                <Text text="Portfolio Value" style="-fx-font-size: 14px; -fx-fill: #666;"/>
+                                <Label fx:id="portfolioValueLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976d2;"/>
+                            </VBox>
+                            
+                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                                <Text text="Total Investment" style="-fx-font-size: 14px; -fx-fill: #666;"/>
+                                <Label fx:id="investmentLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #666;"/>
+                            </VBox>
+                            
+                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                                <Text text="Profit/Loss" style="-fx-font-size: 14px; -fx-fill: #666;"/>
+                                <Label fx:id="profitLossLabel" text="$0.00" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                            </VBox>
+                            
+                            <VBox styleClass="stat-card" spacing="5" HBox.hgrow="ALWAYS">
+                                <Text text="P/L Percentage" style="-fx-font-size: 14px; -fx-fill: #666;"/>
+                                <Label fx:id="profitLossPercentLabel" text="0.00%" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                            </VBox>
+                        </HBox>
+                        
+                        <!-- Charts Section -->
+                        <HBox spacing="20">
+                            <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                                <Text text="Portfolio Allocation" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <PieChart fx:id="portfolioAllocationChart" minHeight="300" legendVisible="true"/>
+                            </VBox>
+                            
+                            <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                                <Text text="Stock Performance Comparison" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <BarChart fx:id="stockComparisonChart" minHeight="300" legendVisible="true">
+                                    <xAxis><CategoryAxis label="Stock Symbol"/></xAxis>
+                                    <yAxis><NumberAxis label="Value ($)"/></yAxis>
+                                </BarChart>
+                            </VBox>
+                        </HBox>
+                        
+                        <!-- Recent Transactions -->
+                        <VBox styleClass="card" spacing="10">
+                            <Text text="Recent Transactions" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <TableView fx:id="recentTransactionsTable" prefHeight="200">
+                                <columns>
+                                    <TableColumn fx:id="recentSymbolCol" text="Symbol" prefWidth="80"/>
+                                    <TableColumn fx:id="recentTypeCol" text="Type" prefWidth="80"/>
+                                    <TableColumn fx:id="recentQuantityCol" text="Quantity" prefWidth="80"/>
+                                    <TableColumn fx:id="recentPriceCol" text="Price" prefWidth="100"/>
+                                    <TableColumn fx:id="recentTotalCol" text="Total" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+            
+            <!-- Portfolio Tab -->
+            <Tab text="💼 My Portfolio">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Text text="My Holdings" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Sell Selected" onAction="#handleSellStock" styleClass="button-danger"/>
+                        <Button text="Refresh" onAction="#handleRefresh" styleClass="button-primary"/>
+                    </HBox>
+                    
+                    <TableView fx:id="portfolioTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="portSymbolCol" text="Symbol" prefWidth="100"/>
+                            <TableColumn fx:id="portCompanyCol" text="Company" prefWidth="200"/>
+                            <TableColumn fx:id="portQuantityCol" text="Shares" prefWidth="80"/>
+                            <TableColumn fx:id="portPurchasePriceCol" text="Avg Purchase Price" prefWidth="140"/>
+                            <TableColumn fx:id="portCurrentPriceCol" text="Current Price" prefWidth="120"/>
+                            <TableColumn fx:id="portProfitLossCol" text="Profit/Loss" prefWidth="150"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="No stocks in portfolio. Start buying stocks from the Stocks tab!"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+            
+            <!-- Stocks Tab -->
+            <Tab text="📈 Stocks">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Text text="Available Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Search:"/>
+                        <TextField fx:id="stockSearchField" promptText="Search by symbol, company, or sector..." prefWidth="300"/>
+                    </HBox>
+                    
+                    <TableView fx:id="stocksTable" VBox.vgrow="ALWAYS" prefHeight="400">
+                        <columns>
+                            <TableColumn fx:id="stockSymbolCol" text="Symbol" prefWidth="100"/>
+                            <TableColumn fx:id="stockCompanyCol" text="Company Name" prefWidth="300"/>
+                            <TableColumn fx:id="stockSectorCol" text="Sector" prefWidth="150"/>
+                            <TableColumn fx:id="stockPriceCol" text="Current Price" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                    
+                    <VBox spacing="10" styleClass="card">
+                        <Label fx:id="selectedStockLabel" text="Select a stock to buy" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Quantity:"/>
+                            <TextField fx:id="buyQuantityField" promptText="Enter quantity" prefWidth="150"/>
+                            <Button text="Buy Stock" onAction="#handleBuyStock" styleClass="button-success"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Add to Watchlist" onAction="#handleAddToWatchlist" styleClass="button-primary"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </Tab>
+            
+            <!-- Transactions Tab -->
+            <Tab text="💳 Transactions">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Text text="Transaction History" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Search:"/>
+                        <TextField fx:id="transactionSearchField" promptText="Search transactions..." prefWidth="300"/>
+                    </HBox>
+                    
+                    <TableView fx:id="transactionsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="transSymbolCol" text="Symbol" prefWidth="80"/>
+                            <TableColumn fx:id="transCompanyCol" text="Company" prefWidth="200"/>
+                            <TableColumn fx:id="transTypeCol" text="Type" prefWidth="80"/>
+                            <TableColumn fx:id="transQuantityCol" text="Quantity" prefWidth="80"/>
+                            <TableColumn fx:id="transPriceCol" text="Price/Share" prefWidth="100"/>
+                            <TableColumn fx:id="transTotalCol" text="Total Amount" prefWidth="120"/>
+                            <TableColumn fx:id="transDateCol" text="Date & Time" prefWidth="180"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="No transactions yet. Start trading to see your transaction history!"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+            
+            <!-- Watchlist Tab -->
+            <Tab text="⭐ Watchlist">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Text text="My Watchlist" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Remove Selected" onAction="#handleRemoveFromWatchlist" styleClass="button-danger"/>
+                    </HBox>
+                    
+                    <TableView fx:id="watchlistTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="watchSymbolCol" text="Symbol" prefWidth="100"/>
+                            <TableColumn fx:id="watchCompanyCol" text="Company Name" prefWidth="300"/>
+                            <TableColumn fx:id="watchSectorCol" text="Sector" prefWidth="150"/>
+                            <TableColumn fx:id="watchPriceCol" text="Current Price" prefWidth="120"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="No stocks in watchlist. Add stocks from the Stocks tab!"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+            
+            <!-- Admin Panel Tab (visible only to admins) -->
+            <Tab text="⚙️ Admin">
+                <VBox fx:id="adminPanel" spacing="20" style="-fx-padding: 20;">
+                    <Text text="Admin Panel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                    
+                    <VBox spacing="15" styleClass="card">
+                        <Text text="Add New Stock" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <GridPane hgap="15" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="100" />
+                                <ColumnConstraints minWidth="200" hgrow="ALWAYS" />
+                            </columnConstraints>
+                            
+                            <Label text="Symbol:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="newStockSymbol" promptText="e.g., TSLA" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="Company Name:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="newStockCompany" promptText="e.g., Tesla Inc." GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Label text="Sector:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <TextField fx:id="newStockSector" promptText="e.g., Automotive" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            
+                            <Label text="Price:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="newStockPrice" promptText="e.g., 242.80" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        </GridPane>
+                        
+                        <Button text="Add Stock" onAction="#handleAddStock" styleClass="button-success" maxWidth="200"/>
+                    </VBox>
+                    
+                    <VBox spacing="10" styleClass="card">
+                        <Text text="System Information" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Label text="Admin users can add new stocks to the system."/>
+                        <Label text="All users can view and trade available stocks."/>
+                    </VBox>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" spacing="20" style="-fx-background-color: #eeeeee; -fx-padding: 10;">
+            <Label text="Stock Visualiser v1.0 | Portfolio Management System"/>
+        </HBox>
+    </bottom>
+</BorderPane>

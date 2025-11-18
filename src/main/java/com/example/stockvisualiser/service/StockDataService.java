@@ -44,12 +44,18 @@ public class StockDataService {
      * Falls back to simulated data if API fails or for demo purposes
      */
     public ObservableList<PriceData> getHistoricalPrices(String symbol) {
+        System.out.println("=== FETCHING DATA FOR: " + symbol + " ===");
+        System.out.println("API Key configured: " + (API_KEY != null && !API_KEY.isEmpty() ? "YES" : "NO"));
+        System.out.println("API Key: " + (API_KEY.length() > 4 ? API_KEY.substring(0, 4) + "..." : "EMPTY"));
+        
         // Try to fetch from API first
         ObservableList<PriceData> apiData = fetchFromAPI(symbol);
         if (apiData != null && !apiData.isEmpty()) {
+            System.out.println("✓ Successfully fetched " + apiData.size() + " data points from API");
             return apiData;
         }
         
+        System.out.println("⚠ API fetch failed, using simulated data");
         // Fallback to simulated realistic data
         return generateSimulatedData(symbol);
     }
@@ -59,11 +65,13 @@ public class StockDataService {
      */
     private ObservableList<PriceData> fetchFromAPI(String symbol) {
         try {
-            // TIME_SERIES_DAILY_ADJUSTED gives us daily stock prices
+            // TIME_SERIES_DAILY gives us daily stock prices
             String urlString = String.format(
                 "%s?function=TIME_SERIES_DAILY&symbol=%s&apikey=%s&outputsize=compact",
                 BASE_URL, symbol, API_KEY
             );
+            
+            System.out.println("🌐 API URL: " + urlString.replace(API_KEY, "***KEY***"));
             
             URI uri = new URI(urlString);
             HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
@@ -72,7 +80,10 @@ public class StockDataService {
             conn.setReadTimeout(5000);
             
             int responseCode = conn.getResponseCode();
+            System.out.println("📡 HTTP Response Code: " + responseCode);
+            
             if (responseCode != 200) {
+                System.err.println("❌ API returned non-200 status: " + responseCode);
                 return null;
             }
             
@@ -85,11 +96,26 @@ public class StockDataService {
             }
             in.close();
             
+            String jsonResponse = response.toString();
+            System.out.println("📥 Response length: " + jsonResponse.length() + " characters");
+            System.out.println("📄 First 200 chars: " + jsonResponse.substring(0, Math.min(200, jsonResponse.length())));
+            
+            // Check for API error messages
+            if (jsonResponse.contains("Error Message") || jsonResponse.contains("Note")) {
+                System.err.println("⚠ API Error in response:");
+                System.err.println(jsonResponse.substring(0, Math.min(500, jsonResponse.length())));
+            }
+            
             // Parse JSON response (simple parsing without external library)
-            return parseAPIResponse(response.toString());
+            ObservableList<PriceData> data = parseAPIResponse(jsonResponse);
+            if (data == null || data.isEmpty()) {
+                System.err.println("❌ Parsing failed or returned empty data");
+            }
+            return data;
             
         } catch (Exception e) {
-            System.err.println("API fetch failed for " + symbol + ": " + e.getMessage());
+            System.err.println("❌ API fetch exception for " + symbol + ": " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

@@ -125,13 +125,41 @@
             <Tab text="📈 Stocks">
                 <ScrollPane fitToWidth="true">
                     <VBox spacing="15" style="-fx-padding: 20;">
-                        <!-- Search and Table Section -->
+                        <!-- Live Stock Search - Available to All Users -->
+                        <VBox spacing="15" styleClass="card" style="-fx-background-color: #e8f5e9;">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Text text="🔍 Search Any Stock" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
+                                <Label text="Search 100,000+ stocks worldwide" style="-fx-font-size: 11px; -fx-text-fill: #666;"/>
+                            </HBox>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <TextField fx:id="publicStockSearchField" promptText="Search any stock: Tesla, AAPL, Microsoft, Bitcoin..." prefWidth="500"/>
+                                <Button text="🔎 Search" onAction="#handlePublicSearchStock" styleClass="button-primary"/>
+                            </HBox>
+                            <TableView fx:id="publicSearchResultsTable" prefHeight="120">
+                                <columns>
+                                    <TableColumn fx:id="publicSymbolCol" text="Symbol" prefWidth="100"/>
+                                    <TableColumn fx:id="publicNameCol" text="Company Name" prefWidth="350"/>
+                                    <TableColumn fx:id="publicRegionCol" text="Region" prefWidth="100"/>
+                                    <TableColumn fx:id="publicTypeCol" text="Type" prefWidth="100"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="Search for any stock above to see results"/>
+                                </placeholder>
+                            </TableView>
+                            <HBox spacing="10">
+                                <Button text="✚ Add to My Stocks" onAction="#handleAddPublicStock" styleClass="button-success"/>
+                                <Label fx:id="publicSearchStatus" text="" style="-fx-text-fill: #666; -fx-font-weight: bold;"/>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- My Stocks Table -->
                         <VBox spacing="10" styleClass="card">
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Text text="Available Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <Text text="My Stocks" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                                 <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
-                                <Label text="Search:"/>
-                                <TextField fx:id="stockSearchField" promptText="Search by symbol, company, or sector..." prefWidth="300"/>
+                                <Label text="Filter:"/>
+                                <TextField fx:id="stockSearchField" promptText="Filter by symbol, company, or sector..." prefWidth="300"/>
                             </HBox>
                             
                             <TableView fx:id="stocksTable" prefHeight="200">

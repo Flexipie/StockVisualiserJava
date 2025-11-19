@@ -58,14 +58,21 @@ public class DashboardController {
     @FXML private TableColumn<Portfolio, String> portProfitLossCol;
 
     // FXML Components - Stocks Tab (with real-time search)
-    @FXML private TextField stockSearchField;
     @FXML private TableView<Stock> stocksTable;
     @FXML private TableColumn<Stock, String> stockSymbolCol;
     @FXML private TableColumn<Stock, String> stockCompanyCol;
     @FXML private TableColumn<Stock, String> stockSectorCol;
     @FXML private TableColumn<Stock, Double> stockPriceCol;
-    @FXML private TextField buyQuantityField;
+    @FXML private TextField stockSearchField;
+    @FXML private TextField publicStockSearchField;
+    @FXML private TableView<com.example.stockvisualiser.model.ApiStockResult> publicSearchResultsTable;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> publicSymbolCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> publicNameCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> publicRegionCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> publicTypeCol;
+    @FXML private Label publicSearchStatus;
     @FXML private Label selectedStockLabel;
+    @FXML private TextField buyQuantityField;
     @FXML private LineChart<String, Number> stockPriceChart;
     @FXML private javafx.scene.text.Text chartTitleText;
 
@@ -223,6 +230,14 @@ public class DashboardController {
     }
 
     private void setupStocksTab() {
+        // Setup public stock search (available to all users)
+        if (publicSearchResultsTable != null) {
+            publicSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+            publicNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+            publicRegionCol.setCellValueFactory(new PropertyValueFactory<>("region"));
+            publicTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        }
+        
         if (stocksTable != null) {
             stockSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
             stockCompanyCol.setCellValueFactory(new PropertyValueFactory<>("companyName"));
@@ -344,21 +359,36 @@ public class DashboardController {
 
     private void setupAdminPanel() {
         // Show/hide admin panel based on user role
+        System.out.println("🔧 Setup Admin Panel...");
+        System.out.println("  Current User: " + (currentUser != null ? currentUser.getUsername() : "NULL"));
+        System.out.println("  User Role: " + (currentUser != null ? currentUser.getRole() : "NULL"));
+        System.out.println("  Can Manage Users: " + (currentUser != null ? currentUser.canManageUsers() : "N/A"));
+        System.out.println("  Admin Panel VBox: " + (adminPanel != null ? "EXISTS" : "NULL"));
+        
         if (adminPanel != null) {
-            adminPanel.setVisible(currentUser.canManageUsers());
-            adminPanel.setManaged(currentUser.canManageUsers());
+            boolean isAdmin = currentUser.canManageUsers();
+            adminPanel.setVisible(isAdmin);
+            adminPanel.setManaged(isAdmin);
             
-            if (currentUser.canManageUsers()) {
+            System.out.println("  ✅ Admin Panel Visibility: " + isAdmin);
+            
+            if (isAdmin) {
+                System.out.println("  📋 Setting up admin components...");
+                
                 // Setup API search results table
                 if (apiSearchResultsTable != null) {
+                    System.out.println("    ✓ API Search Table found");
                     apiSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
                     apiNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
                     apiRegionCol.setCellValueFactory(new PropertyValueFactory<>("region"));
                     apiTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+                } else {
+                    System.out.println("    ❌ API Search Table is NULL");
                 }
                 
                 // Setup admin stocks management table
                 if (adminStocksTable != null) {
+                    System.out.println("    ✓ Admin Stocks Table found");
                     adminSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
                     adminCompanyCol.setCellValueFactory(new PropertyValueFactory<>("companyName"));
                     adminSectorCol.setCellValueFactory(new PropertyValueFactory<>("sector"));
@@ -373,12 +403,19 @@ public class DashboardController {
                     });
                     
                     // Load all stocks into admin table
+                    System.out.println("    📊 Loading " + (allStocks != null ? allStocks.size() : "0") + " stocks");
                     adminStocksTable.setItems(allStocks);
+                } else {
+                    System.out.println("    ❌ Admin Stocks Table is NULL");
                 }
                 
                 // Update statistics
+                System.out.println("    📈 Updating statistics...");
                 updateAdminStats();
+                System.out.println("  ✅ Admin panel setup complete!");
             }
+        } else {
+            System.out.println("  ❌ Admin Panel VBox is NULL - check FXML fx:id");
         }
     }
 
@@ -854,6 +891,70 @@ public class DashboardController {
         showAlert(Alert.AlertType.ERROR, "Error", message);
     }
     
+    // ============ PUBLIC STOCK SEARCH METHODS (ALL USERS) ============
+    
+    /**
+     * Search for stocks - available to all users
+     */
+    @FXML
+    private void handlePublicSearchStock() {
+        String keywords = publicStockSearchField.getText().trim();
+        if (keywords.isEmpty()) {
+            publicSearchStatus.setText("Please enter a search term");
+            return;
+        }
+        
+        publicSearchStatus.setText("Searching...");
+        
+        // Run search in background thread to avoid blocking UI
+        new Thread(() -> {
+            ObservableList<com.example.stockvisualiser.model.ApiStockResult> results = 
+                stockDataService.searchStocks(keywords);
+            
+            // Update UI on JavaFX thread
+            javafx.application.Platform.runLater(() -> {
+                publicSearchResultsTable.setItems(results);
+                publicSearchStatus.setText("Found " + results.size() + " results");
+            });
+        }).start();
+    }
+    
+    /**
+     * Add selected stock from public search - available to all users
+     */
+    @FXML
+    private void handleAddPublicStock() {
+        com.example.stockvisualiser.model.ApiStockResult selected = 
+            publicSearchResultsTable.getSelectionModel().getSelectedItem();
+        
+        if (selected == null) {
+            showError("Please select a stock from the search results");
+            return;
+        }
+        
+        // Get current price for this stock
+        double currentPrice = stockDataService.getCurrentPrice(selected.getSymbol());
+        if (currentPrice == 0.0) {
+            currentPrice = 100.0; // Default price if can't fetch
+        }
+        
+        // Add to database
+        if (stockService.addStock(selected.getSymbol(), selected.getName(), "Unknown", currentPrice)) {
+            showAlert(Alert.AlertType.INFORMATION, "Success", 
+                     "Stock " + selected.getSymbol() + " added to your stocks!");
+            loadStocksTable();
+            if (adminStocksTable != null) {
+                adminStocksTable.setItems(allStocks);
+            }
+            updateAdminStats();
+            publicSearchResultsTable.getItems().clear();
+            publicStockSearchField.clear();
+            publicSearchStatus.setText("");
+        } else {
+            showError("Failed to add stock. It may already exist in your list.");
+        }
+    }
+    
     // ============ ADMIN PANEL METHODS ============
     
     /**
@@ -980,14 +1081,14 @@ public class DashboardController {
      * Update admin statistics
      */
     private void updateAdminStats() {
-        if (totalStocksLabel != null) {
+        if (totalStocksLabel != null && allStocks != null) {
             totalStocksLabel.setText(String.valueOf(allStocks.size()));
         }
         if (totalUsersLabel != null) {
             // Count users from database
             totalUsersLabel.setText("2+"); // Simplified
         }
-        if (totalTradesLabel != null) {
+        if (totalTradesLabel != null && allTransactions != null) {
             totalTradesLabel.setText(String.valueOf(allTransactions.size()));
         }
     }

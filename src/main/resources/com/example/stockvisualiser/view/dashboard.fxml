@@ -10,7 +10,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.stockvisualiser.controller.DashboardController"
-            stylesheets="@../style/style.css">
+            stylesheets="@../style/style.css, @../style/modern-chart.css">
 
     <top>
         <VBox>
@@ -145,21 +145,24 @@
                         </VBox>
                         
                         <!-- Stock Price Chart -->
-                        <VBox spacing="10" styleClass="card" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10;">
-                                <Text fx:id="chartTitleText" text="Select a stock to view 30-day price history" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1976d2;"/>
+                        <VBox spacing="0" styleClass="modern-chart-container">
+                            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="chart-header">
+                                <VBox spacing="2">
+                                    <Text fx:id="chartTitleText" text="Select a stock to view price history" styleClass="chart-main-title"/>
+                                    <Text text="Real-time data from Alpha Vantage API" style="-fx-font-size: 11px; -fx-fill: #999;"/>
+                                </VBox>
                                 <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
-                                <Button text="🔄 Refresh Chart" onAction="#handleRefreshChart" styleClass="button-primary"/>
+                                <Button text="🔄 Refresh" onAction="#handleRefreshChart" styleClass="button-refresh"/>
                             </HBox>
-                            <LineChart fx:id="stockPriceChart" minHeight="350" prefHeight="350" legendVisible="true" animated="true" 
-                                      style="-fx-background-color: transparent;">
+                            <LineChart fx:id="stockPriceChart" minHeight="400" prefHeight="400" legendVisible="true" animated="true" 
+                                      styleClass="modern-line-chart" createSymbols="true">
                                 <xAxis>
                                     <CategoryAxis label="Date" side="BOTTOM" animated="true" 
-                                                 style="-fx-font-size: 11px;" tickLabelRotation="45"/>
+                                                 tickLabelRotation="0" tickLabelGap="8"/>
                                 </xAxis>
                                 <yAxis>
-                                    <NumberAxis label="Price (USD)" side="LEFT" autoRanging="true" 
-                                               style="-fx-font-size: 11px;" tickLabelFill="#666666"/>
+                                    <NumberAxis label="Price (USD)" side="LEFT" autoRanging="false" 
+                                               tickLabelGap="8" minorTickVisible="false"/>
                                 </yAxis>
                             </LineChart>
                         </VBox>

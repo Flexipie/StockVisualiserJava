@@ -689,20 +689,40 @@ public class DashboardController {
                 return;
             }
             
+            // Find min and max prices for better Y-axis scaling
+            double minPrice = Double.MAX_VALUE;
+            double maxPrice = Double.MIN_VALUE;
+            for (StockDataService.PriceData priceData : historicalData) {
+                minPrice = Math.min(minPrice, priceData.getPrice());
+                maxPrice = Math.max(maxPrice, priceData.getPrice());
+            }
+            
+            // Add 5% padding to min/max for better visualization
+            double padding = (maxPrice - minPrice) * 0.05;
+            double yAxisMin = minPrice - padding;
+            double yAxisMax = maxPrice + padding;
+            
+            // Set Y-axis range dynamically
+            NumberAxis yAxis = (NumberAxis) stockPriceChart.getYAxis();
+            yAxis.setAutoRanging(false);
+            yAxis.setLowerBound(yAxisMin);
+            yAxis.setUpperBound(yAxisMax);
+            yAxis.setTickUnit((yAxisMax - yAxisMin) / 8); // ~8 tick marks
+            
             // Create series for the chart
             XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName(symbol + " Stock Price");
+            series.setName(symbol + " Price");
             
-            // Add data points - sample every 2nd point to make X-axis readable
+            // Sample every 3rd point to reduce X-axis label crowding (30 days → 10 labels)
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
-            for (int i = 0; i < historicalData.size(); i += 2) {
+            for (int i = 0; i < historicalData.size(); i += 3) {
                 StockDataService.PriceData priceData = historicalData.get(i);
                 String dateStr = priceData.getDate().format(dateFormatter);
                 series.getData().add(new XYChart.Data<>(dateStr, priceData.getPrice()));
             }
             
-            // Add the last point if we didn't include it
-            if (historicalData.size() % 2 != 0) {
+            // Always add the last point to show most recent data
+            if (historicalData.size() % 3 != 1) {
                 StockDataService.PriceData lastPoint = historicalData.get(historicalData.size() - 1);
                 String dateStr = lastPoint.getDate().format(dateFormatter);
                 series.getData().add(new XYChart.Data<>(dateStr, lastPoint.getPrice()));
@@ -712,22 +732,46 @@ public class DashboardController {
             stockPriceChart.getData().clear();
             stockPriceChart.getData().add(series);
             
-            // Style the series line
-            series.getNode().setStyle("-fx-stroke: #1976d2; -fx-stroke-width: 3px;");
+            // Apply modern gradient styling to the line
+            String priceChange = maxPrice > historicalData.get(0).getPrice() ? "up" : "down";
+            String lineColor = priceChange.equals("up") ? "#4caf50" : "#f44336";
+            series.getNode().setStyle(
+                "-fx-stroke: " + lineColor + ";" +
+                "-fx-stroke-width: 3px;" +
+                "-fx-effect: dropshadow(gaussian, " + lineColor + "80, 6, 0.5, 0, 2);"
+            );
             
-            // Add tooltips to data points
+            // Add tooltips and style data points
             for (XYChart.Data<String, Number> data : series.getData()) {
                 Tooltip tooltip = new Tooltip(
-                    "Date: " + data.getXValue() + "\n" +
-                    "Price: $" + String.format("%.2f", data.getYValue())
+                    "📅 " + data.getXValue() + "\n" +
+                    "💰 $" + String.format("%.2f", data.getYValue())
+                );
+                tooltip.setStyle(
+                    "-fx-font-size: 12px;" +
+                    "-fx-background-color: rgba(0, 0, 0, 0.8);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px;"
                 );
                 Tooltip.install(data.getNode(), tooltip);
                 
-                // Style data points
+                // Style data points with gradient
                 if (data.getNode() != null) {
-                    data.getNode().setStyle("-fx-background-color: #1976d2; -fx-background-radius: 5px;");
+                    data.getNode().setStyle(
+                        "-fx-background-color: " + lineColor + ";" +
+                        "-fx-background-radius: 6px;" +
+                        "-fx-padding: 4px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 4, 0, 0, 1);"
+                    );
                 }
             }
+            
+            // Update chart title with price info
+            double priceChangePercent = ((maxPrice - historicalData.get(0).getPrice()) / historicalData.get(0).getPrice()) * 100;
+            String arrow = priceChangePercent >= 0 ? "📈" : "📉";
+            chartTitleText.setText(String.format("%s %s - 30 Day History (%+.2f%%)", 
+                symbol, arrow, priceChangePercent));
             
         } catch (Exception e) {
             System.err.println("Error updating price chart: " + e.getMessage());

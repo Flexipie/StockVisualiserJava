@@ -1,5 +1,6 @@
 package com.example.stockvisualiser.service;
 
+import com.example.stockvisualiser.model.ApiStockResult;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -268,5 +269,115 @@ public class StockDataService {
         }
         // Return the most recent price
         return historicalData.get(historicalData.size() - 1).getPrice();
+    }
+    
+    /**
+     * Search for stocks using Alpha Vantage SYMBOL_SEARCH endpoint
+     * Allows users to find real stocks to add to the system
+     */
+    public ObservableList<ApiStockResult> searchStocks(String keywords) {
+        ObservableList<ApiStockResult> results = FXCollections.observableArrayList();
+        
+        try {
+            System.out.println("🔍 Searching API for: " + keywords);
+            
+            String urlString = String.format(
+                "%s?function=SYMBOL_SEARCH&keywords=%s&apikey=%s",
+                BASE_URL, keywords.replace(" ", "%20"), API_KEY
+            );
+            
+            System.out.println("🌐 Search URL: " + urlString.replace(API_KEY, "***KEY***"));
+            
+            URI uri = new URI(urlString);
+            HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            
+            int responseCode = conn.getResponseCode();
+            System.out.println("📡 Response: " + responseCode);
+            
+            if (responseCode != 200) {
+                return results;
+            }
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+            in.close();
+            
+            String jsonResponse = response.toString();
+            System.out.println("📥 Got " + jsonResponse.length() + " characters");
+            
+            // Parse search results
+            results = parseSearchResults(jsonResponse);
+            System.out.println("✅ Found " + results.size() + " matching stocks");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Stock search failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Parse Alpha Vantage SYMBOL_SEARCH response
+     * Format: {"bestMatches": [{"1. symbol": "TSLA", "2. name": "Tesla Inc.", ...}]}
+     */
+    private ObservableList<ApiStockResult> parseSearchResults(String json) {
+        ObservableList<ApiStockResult> results = FXCollections.observableArrayList();
+        
+        try {
+            // Look for "bestMatches" array
+            int matchesIndex = json.indexOf("\"bestMatches\"");
+            if (matchesIndex == -1) {
+                return results;
+            }
+            
+            String matchesSection = json.substring(matchesIndex);
+            
+            // Find each match using regex patterns
+            java.util.regex.Pattern symbolPattern = java.util.regex.Pattern.compile("\"1\\. symbol\":\\s*\"([^\"]+)\"");
+            java.util.regex.Pattern namePattern = java.util.regex.Pattern.compile("\"2\\. name\":\\s*\"([^\"]+)\"");
+            java.util.regex.Pattern typePattern = java.util.regex.Pattern.compile("\"3\\. type\":\\s*\"([^\"]+)\"");
+            java.util.regex.Pattern regionPattern = java.util.regex.Pattern.compile("\"4\\. region\":\\s*\"([^\"]+)\"");
+            
+            // Split by closing braces to get individual results
+            String[] parts = matchesSection.split("\\},\\s*\\{");
+            
+            for (String part : parts) {
+                try {
+                    java.util.regex.Matcher symbolMatcher = symbolPattern.matcher(part);
+                    java.util.regex.Matcher nameMatcher = namePattern.matcher(part);
+                    java.util.regex.Matcher typeMatcher = typePattern.matcher(part);
+                    java.util.regex.Matcher regionMatcher = regionPattern.matcher(part);
+                    
+                    if (symbolMatcher.find() && nameMatcher.find()) {
+                        String symbol = symbolMatcher.group(1);
+                        String name = nameMatcher.group(1);
+                        String type = typeMatcher.find() ? typeMatcher.group(1) : "Equity";
+                        String region = regionMatcher.find() ? regionMatcher.group(1) : "Unknown";
+                        
+                        results.add(new ApiStockResult(symbol, name, type, region));
+                        
+                        if (results.size() <= 3) {
+                            System.out.println("  ✓ " + symbol + " - " + name);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Skip malformed entries
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Parse error: " + e.getMessage());
+        }
+        
+        return results;
     }
 }

@@ -234,39 +234,96 @@
             
             <!-- Admin Panel Tab (visible only to admins) -->
             <Tab text="⚙️ Admin">
-                <VBox fx:id="adminPanel" spacing="20" style="-fx-padding: 20;">
-                    <Text text="Admin Panel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                    
-                    <VBox spacing="15" styleClass="card">
-                        <Text text="Add New Stock" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                        <GridPane hgap="15" vgap="10">
-                            <columnConstraints>
-                                <ColumnConstraints minWidth="100" />
-                                <ColumnConstraints minWidth="200" hgrow="ALWAYS" />
-                            </columnConstraints>
-                            
-                            <Label text="Symbol:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                            <TextField fx:id="newStockSymbol" promptText="e.g., TSLA" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                            
-                            <Label text="Company Name:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                            <TextField fx:id="newStockCompany" promptText="e.g., Tesla Inc." GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                            
-                            <Label text="Sector:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                            <TextField fx:id="newStockSector" promptText="e.g., Automotive" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                            
-                            <Label text="Price:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                            <TextField fx:id="newStockPrice" promptText="e.g., 242.80" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                        </GridPane>
+                <ScrollPane fitToWidth="true">
+                    <VBox fx:id="adminPanel" spacing="20" style="-fx-padding: 20;">
+                        <Text text="Admin Panel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                         
-                        <Button text="Add Stock" onAction="#handleAddStock" styleClass="button-success" maxWidth="200"/>
+                        <!-- Search Real Stocks from API -->
+                        <VBox spacing="15" styleClass="card" style="-fx-background-color: #e3f2fd;">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Text text="🔍 Search Real Stocks" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <Region prefWidth="200" minWidth="100" maxWidth="Infinity"/>
+                                <Label text="Powered by Alpha Vantage" style="-fx-font-size: 11px; -fx-text-fill: #666;"/>
+                            </HBox>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <TextField fx:id="stockSearchApiField" promptText="Search stock symbol or company name (e.g., Tesla, AAPL)" prefWidth="400"/>
+                                <Button text="🔎 Search API" onAction="#handleSearchStockApi" styleClass="button-primary"/>
+                            </HBox>
+                            <TableView fx:id="apiSearchResultsTable" prefHeight="150">
+                                <columns>
+                                    <TableColumn fx:id="apiSymbolCol" text="Symbol" prefWidth="100"/>
+                                    <TableColumn fx:id="apiNameCol" text="Company Name" prefWidth="300"/>
+                                    <TableColumn fx:id="apiRegionCol" text="Region" prefWidth="100"/>
+                                    <TableColumn fx:id="apiTypeCol" text="Type" prefWidth="100"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="Search for stocks above. Results will appear here."/>
+                                </placeholder>
+                            </TableView>
+                            <HBox spacing="10">
+                                <Button text="✚ Add Selected Stock" onAction="#handleAddSelectedApiStock" styleClass="button-success"/>
+                                <Label fx:id="apiSearchStatus" text="" style="-fx-text-fill: #666;"/>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Manual Add Stock -->
+                        <VBox spacing="15" styleClass="card">
+                            <Text text="➕ Add Stock Manually" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <GridPane hgap="15" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="120" />
+                                    <ColumnConstraints minWidth="200" hgrow="ALWAYS" />
+                                </columnConstraints>
+                                
+                                <Label text="Symbol:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <TextField fx:id="newStockSymbol" promptText="e.g., TSLA" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                
+                                <Label text="Company Name:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <TextField fx:id="newStockCompany" promptText="e.g., Tesla Inc." GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                
+                                <Label text="Sector:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <TextField fx:id="newStockSector" promptText="e.g., Automotive" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                
+                                <Label text="Current Price:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <TextField fx:id="newStockPrice" promptText="e.g., 242.80" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            </GridPane>
+                            
+                            <Button text="Add Stock" onAction="#handleAddStock" styleClass="button-success" maxWidth="200"/>
+                        </VBox>
+                        
+                        <!-- Manage Existing Stocks -->
+                        <VBox spacing="15" styleClass="card">
+                            <Text text="📊 Manage Stocks" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <TableView fx:id="adminStocksTable" prefHeight="250">
+                                <columns>
+                                    <TableColumn fx:id="adminSymbolCol" text="Symbol" prefWidth="100"/>
+                                    <TableColumn fx:id="adminCompanyCol" text="Company" prefWidth="250"/>
+                                    <TableColumn fx:id="adminSectorCol" text="Sector" prefWidth="150"/>
+                                    <TableColumn fx:id="adminPriceCol" text="Price" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                            <HBox spacing="10">
+                                <Button text="🗑️ Delete Selected" onAction="#handleDeleteStock" styleClass="button-danger"/>
+                                <Button text="🔄 Refresh Prices" onAction="#handleRefreshStockPrices" styleClass="button-primary"/>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- System Stats -->
+                        <VBox spacing="10" styleClass="card">
+                            <Text text="📈 System Statistics" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <GridPane hgap="20" vgap="8">
+                                <Label text="Total Stocks:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+                                <Label fx:id="totalStocksLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                
+                                <Label text="Total Users:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+                                <Label fx:id="totalUsersLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                
+                                <Label text="Active Trades:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+                                <Label fx:id="totalTradesLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            </GridPane>
+                        </VBox>
                     </VBox>
-                    
-                    <VBox spacing="10" styleClass="card">
-                        <Text text="System Information" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                        <Label text="Admin users can add new stocks to the system."/>
-                        <Label text="All users can view and trade available stocks."/>
-                    </VBox>
-                </VBox>
+                </ScrollPane>
             </Tab>
         </TabPane>
     </center>

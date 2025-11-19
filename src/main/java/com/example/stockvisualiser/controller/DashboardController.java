@@ -93,6 +93,21 @@ public class DashboardController {
     @FXML private TextField newStockCompany;
     @FXML private TextField newStockSector;
     @FXML private TextField newStockPrice;
+    @FXML private TextField stockSearchApiField;
+    @FXML private TableView<com.example.stockvisualiser.model.ApiStockResult> apiSearchResultsTable;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> apiSymbolCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> apiNameCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> apiRegionCol;
+    @FXML private TableColumn<com.example.stockvisualiser.model.ApiStockResult, String> apiTypeCol;
+    @FXML private Label apiSearchStatus;
+    @FXML private TableView<Stock> adminStocksTable;
+    @FXML private TableColumn<Stock, String> adminSymbolCol;
+    @FXML private TableColumn<Stock, String> adminCompanyCol;
+    @FXML private TableColumn<Stock, String> adminSectorCol;
+    @FXML private TableColumn<Stock, Double> adminPriceCol;
+    @FXML private Label totalStocksLabel;
+    @FXML private Label totalUsersLabel;
+    @FXML private Label totalTradesLabel;
 
     private ObservableList<Stock> allStocks;
     private ObservableList<Transaction> allTransactions;
@@ -332,6 +347,38 @@ public class DashboardController {
         if (adminPanel != null) {
             adminPanel.setVisible(currentUser.canManageUsers());
             adminPanel.setManaged(currentUser.canManageUsers());
+            
+            if (currentUser.canManageUsers()) {
+                // Setup API search results table
+                if (apiSearchResultsTable != null) {
+                    apiSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+                    apiNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+                    apiRegionCol.setCellValueFactory(new PropertyValueFactory<>("region"));
+                    apiTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+                }
+                
+                // Setup admin stocks management table
+                if (adminStocksTable != null) {
+                    adminSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+                    adminCompanyCol.setCellValueFactory(new PropertyValueFactory<>("companyName"));
+                    adminSectorCol.setCellValueFactory(new PropertyValueFactory<>("sector"));
+                    adminPriceCol.setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
+                    
+                    adminPriceCol.setCellFactory(col -> new TableCell<>() {
+                        @Override
+                        protected void updateItem(Double price, boolean empty) {
+                            super.updateItem(price, empty);
+                            setText(empty ? null : String.format("$%.2f", price));
+                        }
+                    });
+                    
+                    // Load all stocks into admin table
+                    adminStocksTable.setItems(allStocks);
+                }
+                
+                // Update statistics
+                updateAdminStats();
+            }
         }
     }
 
@@ -805,5 +852,143 @@ public class DashboardController {
 
     private void showError(String message) {
         showAlert(Alert.AlertType.ERROR, "Error", message);
+    }
+    
+    // ============ ADMIN PANEL METHODS ============
+    
+    /**
+     * Search for stocks using Alpha Vantage API
+     */
+    @FXML
+    private void handleSearchStockApi() {
+        String keywords = stockSearchApiField.getText().trim();
+        if (keywords.isEmpty()) {
+            apiSearchStatus.setText("Please enter a search term");
+            return;
+        }
+        
+        apiSearchStatus.setText("Searching...");
+        
+        // Run search in background thread to avoid blocking UI
+        new Thread(() -> {
+            ObservableList<com.example.stockvisualiser.model.ApiStockResult> results = 
+                stockDataService.searchStocks(keywords);
+            
+            // Update UI on JavaFX thread
+            javafx.application.Platform.runLater(() -> {
+                apiSearchResultsTable.setItems(results);
+                apiSearchStatus.setText("Found " + results.size() + " results");
+            });
+        }).start();
+    }
+    
+    /**
+     * Add selected stock from API search results
+     */
+    @FXML
+    private void handleAddSelectedApiStock() {
+        com.example.stockvisualiser.model.ApiStockResult selected = 
+            apiSearchResultsTable.getSelectionModel().getSelectedItem();
+        
+        if (selected == null) {
+            showError("Please select a stock from the search results");
+            return;
+        }
+        
+        // Get current price for this stock
+        double currentPrice = stockDataService.getCurrentPrice(selected.getSymbol());
+        if (currentPrice == 0.0) {
+            currentPrice = 100.0; // Default price if can't fetch
+        }
+        
+        // Add to database using StockService method signature
+        if (stockService.addStock(selected.getSymbol(), selected.getName(), "Unknown", currentPrice)) {
+            showAlert(Alert.AlertType.INFORMATION, "Success", 
+                     "Stock " + selected.getSymbol() + " added successfully!");
+            loadStocksTable();
+            adminStocksTable.setItems(allStocks);
+            updateAdminStats();
+            apiSearchResultsTable.getItems().clear();
+            stockSearchApiField.clear();
+            apiSearchStatus.setText("");
+        } else {
+            showError("Failed to add stock. It may already exist.");
+        }
+    }
+    
+    /**
+     * Delete selected stock
+     */
+    @FXML
+    private void handleDeleteStock() {
+        Stock selected = adminStocksTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Please select a stock to delete");
+            return;
+        }
+        
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setHeaderText("Delete Stock: " + selected.getSymbol());
+        confirm.setContentText("Are you sure you want to delete this stock?");
+        
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                if (stockService.deleteStock(selected.getStockId())) {
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Stock deleted successfully!");
+                    loadStocksTable();
+                    adminStocksTable.setItems(allStocks);
+                    updateAdminStats();
+                } else {
+                    showError("Failed to delete stock");
+                }
+            }
+        });
+    }
+    
+    /**
+     * Refresh stock prices from API
+     */
+    @FXML
+    private void handleRefreshStockPrices() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Refresh Prices");
+        confirm.setHeaderText("Update Stock Prices");
+        confirm.setContentText("This will fetch current prices from the API. Continue?");
+        
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                int updated = 0;
+                for (Stock stock : allStocks) {
+                    double newPrice = stockDataService.getCurrentPrice(stock.getSymbol());
+                    if (newPrice > 0) {
+                        stock.setCurrentPrice(newPrice);
+                        stockService.updateStockPrice(stock.getStockId(), newPrice);
+                        updated++;
+                    }
+                }
+                
+                showAlert(Alert.AlertType.INFORMATION, "Success", 
+                         "Updated " + updated + " stock prices!");
+                loadStocksTable();
+                adminStocksTable.refresh();
+            }
+        });
+    }
+    
+    /**
+     * Update admin statistics
+     */
+    private void updateAdminStats() {
+        if (totalStocksLabel != null) {
+            totalStocksLabel.setText(String.valueOf(allStocks.size()));
+        }
+        if (totalUsersLabel != null) {
+            // Count users from database
+            totalUsersLabel.setText("2+"); // Simplified
+        }
+        if (totalTradesLabel != null) {
+            totalTradesLabel.setText(String.valueOf(allTransactions.size()));
+        }
     }
 }

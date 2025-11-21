@@ -358,65 +358,8 @@ public class DashboardController {
     }
 
     private void setupAdminPanel() {
-        // Show/hide admin panel based on user role
-        System.out.println("🔧 Setup Admin Panel...");
-        System.out.println("  Current User: " + (currentUser != null ? currentUser.getUsername() : "NULL"));
-        System.out.println("  User Role: " + (currentUser != null ? currentUser.getRole() : "NULL"));
-        System.out.println("  Can Manage Users: " + (currentUser != null ? currentUser.canManageUsers() : "N/A"));
-        System.out.println("  Admin Panel VBox: " + (adminPanel != null ? "EXISTS" : "NULL"));
-        
-        if (adminPanel != null) {
-            boolean isAdmin = currentUser.canManageUsers();
-            adminPanel.setVisible(isAdmin);
-            adminPanel.setManaged(isAdmin);
-            
-            System.out.println("  ✅ Admin Panel Visibility: " + isAdmin);
-            
-            if (isAdmin) {
-                System.out.println("  📋 Setting up admin components...");
-                
-                // Setup API search results table
-                if (apiSearchResultsTable != null) {
-                    System.out.println("    ✓ API Search Table found");
-                    apiSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-                    apiNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-                    apiRegionCol.setCellValueFactory(new PropertyValueFactory<>("region"));
-                    apiTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-                } else {
-                    System.out.println("    ❌ API Search Table is NULL");
-                }
-                
-                // Setup admin stocks management table
-                if (adminStocksTable != null) {
-                    System.out.println("    ✓ Admin Stocks Table found");
-                    adminSymbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-                    adminCompanyCol.setCellValueFactory(new PropertyValueFactory<>("companyName"));
-                    adminSectorCol.setCellValueFactory(new PropertyValueFactory<>("sector"));
-                    adminPriceCol.setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
-                    
-                    adminPriceCol.setCellFactory(col -> new TableCell<>() {
-                        @Override
-                        protected void updateItem(Double price, boolean empty) {
-                            super.updateItem(price, empty);
-                            setText(empty ? null : String.format("$%.2f", price));
-                        }
-                    });
-                    
-                    // Load all stocks into admin table
-                    System.out.println("    📊 Loading " + (allStocks != null ? allStocks.size() : "0") + " stocks");
-                    adminStocksTable.setItems(allStocks);
-                } else {
-                    System.out.println("    ❌ Admin Stocks Table is NULL");
-                }
-                
-                // Update statistics
-                System.out.println("    📈 Updating statistics...");
-                updateAdminStats();
-                System.out.println("  ✅ Admin panel setup complete!");
-            }
-        } else {
-            System.out.println("  ❌ Admin Panel VBox is NULL - check FXML fx:id");
-        }
+        // Admin panel has been removed from UI - this method is kept for compatibility
+        System.out.println("ℹ️  Admin panel removed from UI (stock search now in Stocks tab for all users)");
     }
 
     private void loadDashboardData() {
@@ -943,10 +886,6 @@ public class DashboardController {
             showAlert(Alert.AlertType.INFORMATION, "Success", 
                      "Stock " + selected.getSymbol() + " added to your stocks!");
             loadStocksTable();
-            if (adminStocksTable != null) {
-                adminStocksTable.setItems(allStocks);
-            }
-            updateAdminStats();
             publicSearchResultsTable.getItems().clear();
             publicStockSearchField.clear();
             publicSearchStatus.setText("");

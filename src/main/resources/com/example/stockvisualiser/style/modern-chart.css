@@ -47,7 +47,7 @@
 
 /* Modern Line Chart Specific */
 .modern-line-chart {
-    -fx-padding: 20;
+    -fx-padding: 20 20 50 20;
     -fx-background-color: transparent;
 }
 
@@ -74,7 +74,7 @@
 
 .modern-line-chart .axis {
     -fx-tick-label-fill: #666666;
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
     -fx-font-weight: 500;
 }
 
@@ -82,6 +82,15 @@
     -fx-text-fill: #424242;
     -fx-font-weight: bold;
     -fx-font-size: 13px;
+}
+
+.modern-line-chart .axis-tick-mark {
+    -fx-stroke: #bdbdbd;
+}
+
+/* Extra padding at bottom for rotated X-axis labels */
+.modern-line-chart .chart-content {
+    -fx-padding: 10 10 40 10;
 }
 
 .modern-line-chart .chart-legend {

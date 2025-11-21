@@ -740,16 +740,16 @@ public class DashboardController {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(symbol + " Price");
             
-            // Sample every 3rd point to reduce X-axis label crowding (30 days → 10 labels)
+            // Sample every 5th point to prevent X-axis label crowding (30 days → 6 labels)
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
-            for (int i = 0; i < historicalData.size(); i += 3) {
+            for (int i = 0; i < historicalData.size(); i += 5) {
                 StockDataService.PriceData priceData = historicalData.get(i);
                 String dateStr = priceData.getDate().format(dateFormatter);
                 series.getData().add(new XYChart.Data<>(dateStr, priceData.getPrice()));
             }
             
             // Always add the last point to show most recent data
-            if (historicalData.size() % 3 != 1) {
+            if (historicalData.size() % 5 != 0) {
                 StockDataService.PriceData lastPoint = historicalData.get(historicalData.size() - 1);
                 String dateStr = lastPoint.getDate().format(dateFormatter);
                 series.getData().add(new XYChart.Data<>(dateStr, lastPoint.getPrice()));
@@ -758,6 +758,12 @@ public class DashboardController {
             // Update chart
             stockPriceChart.getData().clear();
             stockPriceChart.getData().add(series);
+            
+            // Configure X-axis to prevent label overlap
+            CategoryAxis xAxis = (CategoryAxis) stockPriceChart.getXAxis();
+            xAxis.setTickLabelGap(15);
+            xAxis.setGapStartAndEnd(true);
+            xAxis.setTickLabelRotation(-45); // Slight rotation for better readability
             
             // Apply modern gradient styling to the line
             String priceChange = maxPrice > historicalData.get(0).getPrice() ? "up" : "down";

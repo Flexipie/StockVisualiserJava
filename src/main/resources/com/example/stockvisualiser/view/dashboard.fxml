@@ -186,11 +186,11 @@
                                       styleClass="modern-line-chart" createSymbols="true">
                                 <xAxis>
                                     <CategoryAxis label="Date" side="BOTTOM" animated="true" 
-                                                 tickLabelRotation="0" tickLabelGap="8"/>
+                                                 tickLabelRotation="-45" tickLabelGap="15" gapStartAndEnd="true"/>
                                 </xAxis>
                                 <yAxis>
                                     <NumberAxis label="Price (USD)" side="LEFT" autoRanging="false" 
-                                               tickLabelGap="8" minorTickVisible="false"/>
+                                               tickLabelGap="10" minorTickVisible="false"/>
                                 </yAxis>
                             </LineChart>
                         </VBox>

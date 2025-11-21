@@ -759,12 +759,6 @@ public class DashboardController {
             stockPriceChart.getData().clear();
             stockPriceChart.getData().add(series);
             
-            // Configure X-axis to prevent label overlap
-            CategoryAxis xAxis = (CategoryAxis) stockPriceChart.getXAxis();
-            xAxis.setTickLabelGap(15);
-            xAxis.setGapStartAndEnd(true);
-            xAxis.setTickLabelRotation(-45); // Slight rotation for better readability
-            
             // Apply modern gradient styling to the line
             String priceChange = maxPrice > historicalData.get(0).getPrice() ? "up" : "down";
             String lineColor = priceChange.equals("up") ? "#4caf50" : "#f44336";
